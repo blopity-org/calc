@@ -18,7 +18,7 @@ import {
   isNumberString,
 } from './core.js';
 
-export function evalpostfix(pf) {
+export function evalpostfix(pf, variables = {}) {
   let stack = [];
   for (let i = 0; i < pf.length; i++) {
     if (isNumberString(pf[i])) {
@@ -77,7 +77,16 @@ export function evalpostfix(pf) {
         else if (operator === 'atanh') result = atanh(n);
         else throw new Error('Unknown monad operator: ' + operator);
         if (operator !== '!') stack.push(result);
+      } else if (Object.hasOwn(variables, operator)) {
+        const value = Number(variables[operator]);
+        if (!Number.isFinite(value)) {
+          throw new Error(`Variable "${operator}" must be a finite number`);
+        }
+        stack.push(value);
       } else {
+        if (!['+', '-', '*', '/', '^', '%', '//', 'rt'].includes(operator)) {
+          throw new Error(`Unknown variable or operator: ${operator}`);
+        }
         let n2 = stack.pop();
         let n1 = stack.pop();
         if (typeof n1 === 'string' || typeof n2 === 'string') {

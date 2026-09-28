@@ -19,7 +19,11 @@ export function splitExpression(exp) {
         }
       }
       if (!match_found) {
-        if (
+        const identifier = e.slice(i).match(/^[A-Za-z_][A-Za-z0-9_]*/);
+        if (identifier) {
+          split.push(identifier[0]);
+          i += identifier[0].length;
+        } else if (
           isDigit(e[i]) ||
           (e[i] === '.' && i + 1 < e.length && isDigit(e[i + 1]))
         ) {

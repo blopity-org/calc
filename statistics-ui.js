@@ -1,3 +1,6 @@
+import { regressionModels as builtInRegressionModels } from './regression-models.js';
+import { saveRegressionModel } from './app-store.js';
+
 const statisticsUrl =
   'https://cdn.jsdelivr.net/npm/simple-statistics@7.8.8/+esm';
 const chartUrl = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.9/auto/+esm';
@@ -39,18 +42,7 @@ export function registerRegressionType(regressionType) {
   return regressionType;
 }
 
-registerRegressionType({
-  id: 'linear',
-  label: 'Linear',
-  minimumObservations: 2,
-  fit: (points) => fitPolynomial(points, 1),
-});
-registerRegressionType({
-  id: 'quadratic',
-  label: 'Quadratic',
-  minimumObservations: 3,
-  fit: (points) => fitPolynomial(points, 2),
-});
+builtInRegressionModels.forEach(registerRegressionType);
 
 export async function mountStatistics() {
   const [statistics, chartModule] = await Promise.all([
@@ -632,6 +624,14 @@ function analyzeRegression(statistics, chart, elements) {
       : formatNumber(correlation);
     elements.regressionN.value = String(points.data.length);
     elements.regressionStatus.textContent = `${regressionType.label} model fitted to ${points.data.length} paired observations.`;
+    if (model.expression) {
+      saveRegressionModel({
+        id: `regression-${regressionType.id}`,
+        name: `${regressionType.label} regression`,
+        expression: model.expression,
+        equation: model.equation,
+      });
+    }
     if (chart) {
       chart.data.datasets = [
         {
@@ -681,64 +681,6 @@ function parsePairs(text) {
     data.push({ x: Number(parts[0]), y: Number(parts[1]) });
   }
   return { data };
-}
-
-function fitPolynomial(points, degree) {
-  const size = degree + 1;
-  const matrix = Array.from({ length: size }, (_, row) => {
-    const values = Array.from({ length: size }, (_, column) =>
-      points.reduce((sum, point) => sum + point.x ** (row + column), 0),
-    );
-    values.push(
-      points.reduce((sum, point) => sum + point.y * point.x ** row, 0),
-    );
-    return values;
-  });
-  const coefficients = solveLinearSystem(matrix);
-  const predict = (x) =>
-    coefficients.reduce(
-      (sum, coefficient, power) => sum + coefficient * x ** power,
-      0,
-    );
-  const terms = coefficients
-    .map((coefficient, power) => ({ coefficient, power }))
-    .reverse();
-  const equation = terms
-    .map(({ coefficient, power }, index) => {
-      const sign = coefficient < 0 ? '−' : index ? '+' : '';
-      const magnitude = formatNumber(Math.abs(coefficient));
-      const variable = power === 0 ? '' : power === 1 ? 'x' : `x^${power}`;
-      return `${index ? ` ${sign} ` : sign}${magnitude}${variable}`;
-    })
-    .join('');
-  return { coefficients, predict, equation: `y = ${equation}` };
-}
-
-function solveLinearSystem(matrix) {
-  const size = matrix.length;
-  for (let pivot = 0; pivot < size; pivot += 1) {
-    let bestRow = pivot;
-    for (let row = pivot + 1; row < size; row += 1) {
-      if (Math.abs(matrix[row][pivot]) > Math.abs(matrix[bestRow][pivot]))
-        bestRow = row;
-    }
-    [matrix[pivot], matrix[bestRow]] = [matrix[bestRow], matrix[pivot]];
-    if (Math.abs(matrix[pivot][pivot]) < Number.EPSILON) {
-      throw new Error(
-        'Regression cannot be fit: the x values do not vary enough.',
-      );
-    }
-    const divisor = matrix[pivot][pivot];
-    for (let column = pivot; column <= size; column += 1)
-      matrix[pivot][column] /= divisor;
-    for (let row = 0; row < size; row += 1) {
-      if (row === pivot) continue;
-      const factor = matrix[row][pivot];
-      for (let column = pivot; column <= size; column += 1)
-        matrix[row][column] -= factor * matrix[pivot][column];
-    }
-  }
-  return matrix.map((row) => row[size]);
 }
 
 function pearsonCorrelation(points) {

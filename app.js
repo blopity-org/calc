@@ -1,4 +1,5 @@
 import { mountCalculator } from './calculator-ui.js';
+import { mountWorkspace } from './workspace-ui.js';
 
 const screens = new Map(
   Array.from(document.querySelectorAll('[data-screen]'), (screen) => [
@@ -82,6 +83,14 @@ registerMode({
   theme: 'tool-card--cnc',
   mount: () => import('./cnc-ui.js').then(({ mountCnc }) => mountCnc()),
 });
+registerMode({
+  id: 'workspace',
+  title: 'Workspace',
+  description: 'Custom tools, questions, and your math inbox.',
+  symbol: '◎',
+  theme: 'tool-card--workspace',
+  mount: mountWorkspace,
+});
 
 document.querySelectorAll('[data-mode-count]').forEach((element) => {
   element.textContent = String(modes.length).padStart(2, '0');
@@ -116,6 +125,29 @@ function navigateTo(screenId) {
     })
     .finally(() => pendingFeatures.delete(screenId));
 }
+
+function setFocusMode(enabled) {
+  document.body.classList.toggle('focus-mode', enabled);
+  document.querySelector('[data-focus-exit]').hidden = !enabled;
+  document
+    .querySelector('[data-focus-toggle]')
+    .setAttribute('aria-pressed', String(enabled));
+}
+
+document
+  .querySelector('[data-focus-toggle]')
+  .addEventListener('click', () => setFocusMode(true));
+document
+  .querySelector('[data-focus-exit]')
+  .addEventListener('click', () => setFocusMode(false));
+document.addEventListener('keydown', (event) => {
+  if (
+    event.key === 'Escape' &&
+    document.body.classList.contains('focus-mode')
+  ) {
+    setFocusMode(false);
+  }
+});
 
 document.addEventListener('click', (event) => {
   if (!(event.target instanceof Element)) return;

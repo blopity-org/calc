@@ -9,6 +9,8 @@ export function topostfix(split) {
     c = split[i];
     if (isNumberString(c)) {
       postfix.push(c);
+    } else if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(c) && !monads.includes(c)) {
+      postfix.push(c);
     } else if (c === '(') {
       stack.push(c);
     } else if (c === ')') {

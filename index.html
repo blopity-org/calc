@@ -24,8 +24,10 @@
             <nav class="primary-nav" aria-label="Main navigation">
                 <button type="button" data-navigate="home-screen" aria-current="page">Home</button>
                 <button type="button" data-navigate="tools-screen">Modes</button>
+                <button type="button" data-navigate="workspace-screen">Workspace</button>
                 <button type="button" data-navigate="about-screen">About</button>
             </nav>
+            <button class="focus-toggle" type="button" data-focus-toggle aria-pressed="false">Focus</button>
             <div class="topbar-status"><span class="status-dot"></span> PERSONAL WORKSPACE</div>
         </header>
 
@@ -96,7 +98,13 @@
                         <div class="input-wrap"><span class="input-prefix" aria-hidden="true">fx</span><input
                                 type="text" placeholder="12 * (3 + 4)" id="numerical-input" autocomplete="off"
                                 spellcheck="false"></div>
-                        <p class="input-hint">Enter an expression to get started.</p>
+                        <label class="calculator-model-label" for="numerical-model">SAVED FUNCTION<select
+                                id="numerical-model">
+                                <option value="">Enter an expression</option>
+                            </select></label>
+                        <label class="calculator-model-label" id="numerical-x-field" for="numerical-x" hidden>VALUE OF X
+                            <input id="numerical-x" type="number" value="1" step="any"></label>
+                        <p class="input-hint">Use x for a variable. Choose a fitted or custom function to load it.</p>
                         <button class="calculate-button" id="numerical-calculate"
                             type="button"><span>Calculate</span><span aria-hidden="true">↗</span></button>
                     </div>
@@ -372,7 +380,8 @@
                     </article>
                     <article><span>02 / PRIVACY</span>
                         <h2>Your data stays here.</h2>
-                        <p>Datasets are analyzed in your browser. Nothing is uploaded or saved by Number Lab.</p>
+                        <p>Calculations stay in your browser. Workspace accounts, fitted functions, and posts are saved
+                            locally in this browser only.</p>
                     </article>
                     <article><span>03 / OPEN TOOLKIT</span>
                         <h2>Built to grow.</h2>
@@ -383,8 +392,111 @@
                 <button class="home-cta" type="button" data-navigate="tools-screen"><span>Browse modes</span><span
                         aria-hidden="true">↗</span></button>
             </section>
+
+            <section class="screen workspace-screen" id="workspace-screen" data-screen hidden>
+                <div class="section-heading calculator-heading">
+                    <div class="heading-with-back"><button class="back-button" type="button"
+                            data-navigate="tools-screen" aria-label="Back to modes">←</button>
+                        <div>
+                            <p class="eyebrow">NUMBER LAB <span>/</span> WORKSPACE</p>
+                            <h1>Your <em>workspace.</em></h1>
+                        </div>
+                    </div>
+                    <span class="live-label"><span class="status-dot"></span> LOCAL MODE</span>
+                </div>
+                <p class="workspace-notice">Prototype accounts and posts are stored in this browser only. Do not use a
+                    real password or sensitive information.</p>
+                <section class="workspace-account" aria-labelledby="workspace-account-title">
+                    <div class="workspace-section-heading">
+                        <div>
+                            <p class="eyebrow">ACCOUNT <span>/</span> ACCESS</p>
+                            <h2 id="workspace-account-title">Sign in or join</h2>
+                        </div>
+                    </div>
+                    <form id="auth-form" class="workspace-form">
+                        <label for="auth-username">USERNAME<input id="auth-username" name="username"
+                                autocomplete="username" required minlength="3" maxlength="24"></label>
+                        <label for="auth-password">PASSWORD<input id="auth-password" name="password" type="password"
+                                autocomplete="current-password" required minlength="6"></label>
+                        <div class="workspace-actions"><button class="calculate-button" id="auth-login"
+                                type="submit"><span>Sign in</span><span aria-hidden="true">↗</span></button><button
+                                class="workspace-secondary" id="auth-register" type="button">Create account</button>
+                        </div>
+                    </form>
+                    <div id="account-session" class="account-session" hidden>
+                        <p>Signed in as <strong id="account-name"></strong> <span id="account-role"></span></p><button
+                            class="workspace-secondary" id="auth-logout" type="button">Sign out</button>
+                    </div>
+                    <p class="workspace-feedback" id="auth-feedback" role="status" aria-live="polite"></p>
+                    <p class="workspace-demo">Starter admin: <code>admin</code> / <code>numberlab</code></p>
+                </section>
+
+                <div class="workspace-columns">
+                    <section class="workspace-block" aria-labelledby="forum-title">
+                        <div class="workspace-section-heading">
+                            <div>
+                                <p class="eyebrow">COMMUNITY <span>/</span> QUESTIONS</p>
+                                <h2 id="forum-title">Math forum</h2>
+                            </div>
+                        </div>
+                        <form id="forum-form" class="workspace-form" hidden>
+                            <label for="forum-question">ASK A QUESTION<textarea id="forum-question" rows="3"
+                                    maxlength="1000" required
+                                    placeholder="What are you working through?"></textarea></label>
+                            <button class="calculate-button" type="submit"><span>Post question</span><span
+                                    aria-hidden="true">↗</span></button>
+                        </form>
+                        <p class="workspace-gate" id="forum-gate">Sign in to post a question.</p>
+                        <ul id="forum-list" class="community-list" aria-live="polite"></ul>
+                    </section>
+                    <section class="workspace-block" aria-labelledby="inbox-title">
+                        <div class="workspace-section-heading">
+                            <div>
+                                <p class="eyebrow">INBOX <span>/</span> MATH LETTER</p>
+                                <h2 id="inbox-title">Calculator inbox</h2>
+                            </div>
+                        </div>
+                        <label class="newsletter-toggle"><input id="newsletter-subscribe" type="checkbox"
+                                disabled><span>Receive the math newsletter</span></label>
+                        <p class="workspace-gate" id="newsletter-gate">Sign in to manage your subscription.</p>
+                        <div id="newsletter-list" class="community-list" aria-live="polite"></div>
+                    </section>
+                </div>
+
+                <section id="admin-tools" class="workspace-admin" aria-labelledby="admin-title" hidden>
+                    <div class="workspace-section-heading">
+                        <div>
+                            <p class="eyebrow">ADMIN <span>/</span> PUBLISH</p>
+                            <h2 id="admin-title">Admin studio</h2>
+                        </div>
+                    </div>
+                    <div class="workspace-columns">
+                        <form id="custom-calculator-form" class="workspace-form">
+                            <h3>Add a custom calculator</h3>
+                            <label for="custom-calculator-name">NAME<input id="custom-calculator-name" required
+                                    maxlength="48"></label>
+                            <label for="custom-calculator-expression">FORMULA<textarea id="custom-calculator-expression"
+                                    rows="2" required maxlength="240" placeholder="2*x+5"></textarea></label>
+                            <p class="input-hint">Use x as the input. The formula will appear in Numerical.</p>
+                            <button class="calculate-button" type="submit"><span>Add calculator</span><span
+                                    aria-hidden="true">↗</span></button>
+                        </form>
+                        <form id="newsletter-form" class="workspace-form">
+                            <h3>Publish a newsletter</h3>
+                            <label for="newsletter-title">SUBJECT<input id="newsletter-title" required
+                                    maxlength="80"></label>
+                            <label for="newsletter-body">MESSAGE<textarea id="newsletter-body" rows="4" required
+                                    maxlength="2000"></textarea></label>
+                            <button class="calculate-button" type="submit"><span>Publish to inboxes</span><span
+                                    aria-hidden="true">↗</span></button>
+                        </form>
+                    </div>
+                    <p class="workspace-feedback" id="admin-feedback" role="status" aria-live="polite"></p>
+                </section>
+            </section>
         </main>
     </div>
+    <button class="focus-exit" type="button" data-focus-exit hidden>Exit focus</button>
     <script src="app.js" type="module"></script>
 </body>
 

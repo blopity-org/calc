@@ -6,8 +6,11 @@
 - `app.js` owns screen navigation and the `registerMode(...)` catalog. Registration builds a menu card and lazy-mounts its feature the first time it opens.
 - `calculator-ui.js` connects calculator controls to the expression engine. Keep DOM reads, event handlers, and display updates here.
 - `statistics-ui.js` parses datasets and renders descriptive summaries, a histogram, box plot, regression, and grouped-frequency analysis. It loads pinned `simple-statistics` and Chart.js ESM builds from jsDelivr only when Statistics opens.
+- `regression-models.js` owns the built-in regression catalog and returns display equations plus expressions accepted by the numerical evaluator.
+- `app-store.js` is the browser-local persistence boundary for fitted models, custom calculators, the prototype account, forum posts, and newsletter issues. Replace this module with a server API before using accounts or community features across devices or with sensitive data.
+- `workspace-ui.js` owns the Workspace account, forum, inbox, and admin form wiring; `app.js` lazy-mounts it as a regular mode.
 - `cnc-ui.js` connects the CNC interface to the pinned Math.js ESM build for complex-number operations; it is loaded only when CNC opens.
-- `main.js`, `parser.js`, `postfix.js`, `eval.js`, and `core.js` implement expression evaluation. Keep this layer independent of the DOM so it can be tested and reused.
+- `main.js`, `parser.js`, `postfix.js`, `eval.js`, and `core.js` implement expression evaluation. The evaluator accepts an optional variable object (for example `{ x: 2 }`). Keep this layer independent of the DOM so it can be tested and reused.
 - `kb/` is a separate standalone application with its own `index.html` and `app.js`. Treat it as an independent app unless a change explicitly calls for integrating it.
 - `style.css` owns the Number Lab visual system. Reuse its variables and responsive patterns when adding screens.
 
@@ -30,7 +33,9 @@ Then open `http://localhost:8000`.
 
 `statistics-ui.js` exports `registerRegressionType({ id, label, minimumObservations, fit })`. Add one registration call next to the built-in linear and quadratic registrations. `fit(points)` receives `{ x, y }` observations and must return `{ equation, predict(x) }`; the Statistics mode uses it for the equation, R-squared, and fitted curve. Keep IDs unique and require enough points for the model's parameters.
 
-The Descriptive view accepts finite numbers separated by whitespace, commas, or semicolons. Its deviation/variance selector switches between population and sample formulas; sample deviation and variance need at least two observations. The box plot marks outliers beyond 1.5 times the interquartile range, and the histogram uses a bounded automatic bin count. Regression accepts one finite x/y pair per line. Grouped data accepts ordered class intervals and whole-number frequencies; its mean, median, and mode are grouped-data estimates.
+The Descriptive view accepts finite numbers separated by whitespace, commas, or semicolons. Its deviation/variance selector switches between population and sample formulas; sample deviation and variance need at least two observations. The box plot marks outliers beyond 1.5 times the interquartile range, and the histogram uses a bounded automatic bin count. Regression accepts one finite x/y pair per line; Linear, polynomial, ExpReg, PowerReg, LnReg, and Logistic models expose fitted expressions to Numerical. Grouped data accepts ordered class intervals and whole-number frequencies; its mean, median, and mode are grouped-data estimates.
+
+The Workspace is a local prototype. Its starter admin credentials are `admin` / `numberlab`; account passwords and posts live in browser localStorage and are not secure. Do not deploy this account model as authentication. Keep future feature catalogs and persistence replaceable through their dedicated modules.
 
 ## Larger Change Checklist
 
@@ -39,6 +44,7 @@ The Descriptive view accepts finite numbers separated by whitespace, commas, or 
 - Keep the standalone `kb/` application independent unless cross-app integration is part of the requirement.
 - Check all navigation paths, including returning to the launcher, and verify a feature is not mounted repeatedly after revisiting its screen.
 - Test one representative success case and one invalid-input or empty-state case for changed behavior.
-- For Statistics changes, include a tied-mode dataset, a known outlier, linear/quadratic fit checks, grouped frequencies with known totals, and both sample and population deviation settings.
+- For Statistics changes, include a tied-mode dataset, a known outlier, polynomial regression fit checks, grouped frequencies with known totals, and both sample and population deviation settings.
 - Check the launcher and affected screens at desktop and narrow mobile widths; confirm there is no horizontal overflow.
+- Verify custom calculator formulas with `x`, test admin/member permissions, and check the local-only security notice when changing Workspace behavior.
 - For larger changes, update these notes when entry points, module responsibilities, or extension steps change.
